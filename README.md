@@ -42,7 +42,7 @@ The **evaluator** can be used to compute the result of an OCL# expression. For c
 
 ## Executing the test-suite
 
-If you have loaded `unit_test.pl`, you can execute the test suite by invoking:
+If you have loaded `unit_test.pl`, you can execute the test suite by invoking `unit_test_all`:
 
     ?- unit_test_all.
     Starting parser test
