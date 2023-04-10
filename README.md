@@ -17,14 +17,14 @@ No installation is required. You can load the OCL# toolkit by loading the file `
 
 ## Using the toolkit
 
-The parser reads OCL# specifications and produces a parse tree for syntactically correct specifications. It can be used to read complete **specifications** (a lists of invariants) or, for convenience, isolated **expressions**. 
+The **parser** reads OCL# specifications and produces a parse tree for syntactically correct specifications. It can be used to read complete **specifications** (a lists of invariants) or, for convenience, isolated **expressions**. 
 
     ?- parse_ocls( "context Class inv: (1 = 3)", X ).
     X = spec([invariant("Class", equals(int_const(1), int_const(3)))]).
     ?- parse_ocls_expr( "1 = 3", X ). 
     X = equals(int_const(1), int_const(3)).
 
-The type-checker can be used to compute the type of an OCL# expression and check the type of subexpressions. For convenience, it can be used either on a parse tree or a string containing an OCL# expression (the expression is parsed and then type-checked).
+The **type-checker** can be used to compute the type of an OCL# expression and check the type of subexpressions. For convenience, it can be used either on a parse tree or a string containing an OCL# expression (the expression is parsed and then type-checked).
 
     ?- type_check_ocls( equals(int_const(1), int_const(3)), X ).
     X = ctype(boolean, 1, 1, undef, undef).
@@ -32,7 +32,7 @@ The type-checker can be used to compute the type of an OCL# expression and check
     ?- type_check_ocls_expr( "1 = 3", X ).
     X = ctype(boolean, 1, 1, undef, undef).
 
-The evaluator can be used to compute the result of an OCL# expression. For convenience, it can be used either on a parse tree or a string containing an OCL# expression (the expression is parsed and then evaluated).
+The **evaluator** can be used to compute the result of an OCL# expression. For convenience, it can be used either on a parse tree or a string containing an OCL# expression (the expression is parsed and then evaluated).
 
     ?- eval_ocls( equals(int_const(1), int_const(3)), [], X ).
     X = [0].
