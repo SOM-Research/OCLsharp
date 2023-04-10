@@ -9,7 +9,7 @@ OCL# aims to solve some of the shortcomings with the semantics of OCL. It provid
 The OCL# toolkit is implemented in Prolog. OCL# has been tested in [SWI Prolog](https://www.swi-prolog.org/).
 ## Installation
 
-No installation is required. You can load the OCL# toolkit by loading the file `ocls.ps`. You can also load the test suite by loading the extra file `unit-test.pl`. In SWI Prolog, you can do that using the following commands 
+No installation is required. You can load the OCL# toolkit by loading the file `ocls.ps`. You can also load the test suite by loading the extra file `unit_test.pl`. In SWI Prolog, you can do that using the following commands 
 
     swipl
     ?- [ocls].
@@ -39,3 +39,20 @@ The **evaluator** can be used to compute the result of an OCL# expression. For c
 
     ?- eval_ocls_expr( "1 = 3", X ).
     X = [0].
+
+## Executing the test-suite
+
+If you have loaded `unit_test.pl`, you can execute the test suite by invoking:
+
+    ?- unit_test_all.
+    Starting parser test
+    --------------------
+    - Boolean connectives and allInstances: Passed
+    - nulls and including: Passed
+      ...
+    All tests
+     Total : 115
+     Passed: 115
+     Failed: 0
+
+    true.
