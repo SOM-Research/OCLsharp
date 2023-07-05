@@ -13,7 +13,7 @@ This repository is the companion to the research paper providing a description o
 The OCL# toolkit is implemented in Prolog. OCL# has been tested in [SWI Prolog](https://www.swi-prolog.org/).
 ## Installation
 
-No installation is required. You can load the OCL# toolkit by loading the file `ocls.ps`. You can also load the test suite by loading the extra file `unit_test.pl`. In SWI Prolog, you can do that using the following commands 
+No installation is required. You can load the OCL# toolkit by loading the file `ocls.pl`. You can also load the test suite by loading the extra file `unit_test.pl`. In SWI Prolog, you can do that using the following commands 
 
     swipl
     ?- [ocls].
