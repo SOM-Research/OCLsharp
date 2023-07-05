@@ -6,7 +6,7 @@ OCL# aims to solve some of the shortcomings with the semantics of OCL. It provid
 
 This repository is the companion to the research paper providing a description of OCL#:
 
-*Friedrich Steimann, Robert Clarisó, Martin Gogolla (2023). "OCL Rebuilt, from the Ground Up". ACM/IEEE 26th International Conference on Model-Driven Engineering Languages and Systems (MODELS), IEEE, to appear.*
+> Friedrich Steimann, Robert Clarisó, Martin Gogolla (2023). "OCL Rebuilt, from the Ground Up". ACM/IEEE 26th International Conference on Model-Driven Engineering Languages and Systems (MODELS), IEEE, to appear.
 
 ## Requirements
 
