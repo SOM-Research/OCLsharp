@@ -37,7 +37,7 @@ The **type-checker** can be used to compute the type of an OCL# expression and c
     ?- type_check_ocls_expr( "1 = 2 + 3", X ).
     X = ctype(boolean, 1, 1, undef, undef).
 
-In OCL#, every expression evaluates to a collection, and the type of the collection is implicitly defined by the uniqueness and order (or lack thereof) of values in the collection. Hence, types in OCL# combine information about multiplicity and types in a single entity called `ctype`. A `ctype` describes: its *member type*, its *minimum* and *maximum multiplicity*, its *uniqueness* (either unique, non-unique or undefined) and the *order* of its elements (ordered, unordered or undefined). The member type can either be another `ctype`, a base type (ìnteger, boolean or any) or a class name. More details about the OCL# type system are available in the OCL# paper.
+In OCL#, every expression evaluates to a collection. The type of the collection (Set, Sequence, ...) is implicitly defined by the uniqueness and order (or lack thereof) of values in the collection. Hence, types in OCL# combine information about multiplicity and types in a single entity called `ctype`. A `ctype` describes: its *member type*, its *minimum* and *maximum multiplicity*, its *uniqueness* (either unique, non-unique or undefined) and the *order* of its elements (ordered, unordered or undefined). The member type can either be another `ctype`, a base type (ìnteger, boolean or any) or a class name. More details about the OCL# type system are available in the OCL# paper.
 
 The **evaluator** can be used to compute the result of an OCL# expression. For convenience, it can be used either on a parse tree or a string containing an OCL# expression (the expression is parsed and then evaluated).
 
