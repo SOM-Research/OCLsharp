@@ -29,6 +29,28 @@ The **parser** reads OCL# specifications and produces a parse tree for syntactic
     ?- parse_ocls_expr( "1 = 2 + 3", X ). 
     X = equals(int_const(1), plus(int_const(2), int_const(3))).
 
+The following is a compact description of the grammar for OCL#:
+
+    Spec ::= | Invariant Spec;
+    Invariant ::= 'context' IDENT 'inv' ':' Expression;
+    Type ::= 'bool' | 'int' | 'OclAny' | IDENT | CollectionType '(' Type ')';
+    CollectionType ::= 'Set' | 'Bag' | 'Sequence' | 'OrderedSet';
+    UnaryOperator ::= '-' | 'not';
+    BinaryOperator ::= '=' | '+' | '-' | '*' | '/' | 'and' | 'or';
+    Type ::= 
+    TypeCast ::= 'asBag' | 'asSet' | 'asSequence' | 'asOrderedSet';
+    Expression ::= self | true | false | INT_VALUE | IDENT | 
+                   'no' '(' Type ')' |
+                   IDENT '.' 'allInstances' '(' ')' |
+                   Expression '.' IDENT |
+                   Expression '->' 'including' '(' Expression ')' |
+                   Expression '->' 'iterate' '(' IDENT ';' IDENT '=' Expression '|' Expression ')' |
+                   Expression '->' TypeCast '(' ')' |
+                   '(' Expression ')' |
+                   UnaryOperator Expression |
+                   Expression BinaryOperator Expresion |
+                   'if' Expression 'then' Expression 'else' Expression 'endif';         
+
 The **type-checker** can be used to compute the type of an OCL# expression and check the type of subexpressions. For convenience, it can be used either on a parse tree or a string containing an OCL# expression (the expression is parsed and then type-checked).
 
     ?- type_check_ocls( equals(int_const(1), plus(int_const(2), int_const(3))), X ).
