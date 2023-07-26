@@ -37,7 +37,6 @@ The following is a compact description of the grammar for OCL#:
     CollectionType ::= 'Set' | 'Bag' | 'Sequence' | 'OrderedSet';
     UnaryOperator ::= '-' | 'not';
     BinaryOperator ::= '=' | '+' | '-' | '*' | '/' | 'and' | 'or';
-    Type ::= 
     TypeCast ::= 'asBag' | 'asSet' | 'asSequence' | 'asOrderedSet';
     Expression ::= self | true | false | INT_VALUE | IDENT | 
                    'no' '(' Type ')' |
