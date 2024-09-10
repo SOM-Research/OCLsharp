@@ -83,7 +83,7 @@ In OCL# and OCL-, every expression evaluates to a collection. The type of the co
 
 *Warning:* The current implementation of the type-checker is very verbose and will output information about the type of subexpressions to facilitate debugging. This information can be safely ignored if you are only interested in the type of the complete expression.
 
-The **evaluator** can be used to compute the result of an OCL# expression. For convenience, it can be used either on a parse tree or a string containing an OCL# expression (the expression is parsed and then evaluated).
+The **evaluator** can be used to compute the result of an OCL# or OCL- expression. For convenience, it can be used either on a parse tree or a string containing an OCL# or OCL- expression (the expression is parsed, type-checked and then evaluated).
 
     ?- eval_ocls( equals(int_const(1), plus(int_const(2), int_const(3))), [], X ).
     X = [0].
