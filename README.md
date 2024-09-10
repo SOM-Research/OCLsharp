@@ -30,13 +30,18 @@ Similarly, you can load the files related to the OCL- language as follows:
 
 ## Using the toolkit
 
-The toolkit for OCL# and OCL- offers several components: a **parser**, **typechecker** and **evaluator** for OCL# and OCL-; and a **translator** that rewrites OCL# into the simpler OCL- notation. The name of the methods includes the term `ocls` (for OCL#) or `oclc`(for OCL core).
+The toolkit for OCL# and OCL- offers several components: a **parser**, **typechecker** and **evaluator** for OCL# and OCL-; and a **translator** that rewrites OCL# into the simpler OCL- notation. The name of the methods includes the term `ocls` (for OCL#) or `oclc`(for OCL core) to distinguish for which notation they operate.
 
-The **parsers** read OCL- specifications and produce a parse tree for syntactically correct specifications. It can be used to read complete **specifications** (a lists of OCL# invariants or OCL- expressions) or, for convenience, isolated **expressions**. 
+The **parsers** read OCL# or OCL- specifications and produce a parse tree for syntactically correct specifications. It can be used to read complete **specifications** (a lists of OCL# invariants or OCL- expressions) or, for convenience, isolated **expressions**. 
 
     ?- parse_ocls( "context Class inv: (1 = 2 + 3)", X ).
     X = spec([invariant("Class", equals(int_const(1), plus(int_const(2), int_const(3))))]).
     ?- parse_ocls_expr( "1 = 2 + 3", X ). 
+    X = equals(int_const(1), plus(int_const(2), int_const(3))).
+
+    ?- parse_oclc( "(1 = 2 + 3)", X ).
+    X = spec([equals(int_const(1), plus(int_const(2), int_const(3)))]).
+    ?- parse_oclc_expr( "1 = 2 + 3", X ). 
     X = equals(int_const(1), plus(int_const(2), int_const(3))).
 
 The following is a compact description of the grammar for OCL#:
@@ -66,6 +71,12 @@ The **type-checkers** can be used to compute the type of an OCL# or OCL- express
     X = ctype(boolean, 1, 1, undef, undef).
 
     ?- type_check_ocls_expr( "1 = 2 + 3", X ).
+    X = ctype(boolean, 1, 1, undef, undef).
+
+    ?- type_check_oclc( equals(int_const(1), plus(int_const(2), int_const(3))), X ).
+    X = ctype(boolean, 1, 1, undef, undef).
+
+    ?- type_check_oclc_expr( "1 = 2 + 3", X ).
     X = ctype(boolean, 1, 1, undef, undef).
 
 In OCL# and OCL-, every expression evaluates to a collection. The type of the collection (Set, Sequence, ...) is implicitly defined by the uniqueness and order (or lack thereof) of values in the collection. Hence, types in OCL# combine information about multiplicity and types in a single entity called `ctype`. A `ctype` describes: its *member type*, its *minimum* and *maximum multiplicity*, its *uniqueness* (either unique, non-unique or undefined) and the *order* of its elements (ordered, unordered or undefined). The member type can either be another `ctype`, a base type (ìnteger, boolean or any) or a class name. More details about the OCL# type system are available in the OCL# paper.
