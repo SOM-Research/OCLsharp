@@ -1,24 +1,26 @@
 :- set_prolog_flag(double_quotes, chars).
 :- use_module(library(dcg/basics)).
 
+% OCL core (OCL-) module
+
 % -- INTERFACE---------------------------------------------------------------
 
 %
-% OCL# parser - parsing complete specifications
+% OCL- parser - parsing OCL- specifications
 %
-% parse_ocls( Spec, Tree )
+% parse_oclc( Spec, Tree )
 % 
 % Parse an OCL specification stored in a string. No type checking is perfomed 
 % at this stage.
-% - Spec: (Input) OCL# Specification, between double quotes.
+% - Spec: (Input) OCL- Specification, between double quotes.
 % - Tree: (Output) Parse tree of the specification.
 % 
 % 
 % Example:
-% ?- parse_ocls( "context C inv: true" , X)
-% X = spec( [invariant("C", bool_const(1))] )
+% ?- parse_ocls( "true" , X)
+% X = spec( [bool_const(1)] )
 
-parse_ocls(Spec, Tree) :-
+parse_oclc(Spec, Tree) :-
    ( phrase(spec(Tree), Spec) ->
      !
    ; write('Error: Parse error reading - '),
@@ -28,42 +30,40 @@ parse_ocls(Spec, Tree) :-
    ).
 
 %
-% OCL# expression parser - parsing an isolated expression
+% OCL- expression parser - parsing an isolated expression
 %
-% parse_ocls_expr( ExprSpec, Tree )
+% parse_oclc_expr( ExprSpec, Tree )
 % 
-% Parse an OCL expression stored in a string. The method builds a fake invariant
+% Parse an OCL- expression stored in a string. The method builds a fake invariant
 % around the expression before passing it to the parser.
 % No type checking is perfomed at this stage.
-% - ExprSpec: (Input) An OCL# expression, between double quotes.
-% - Tree: (Output) Parse tree of the specification.
+% - ExprSpec: (Input) An OCL- expression, between double quotes.
+% - Tree: (Output) Parse tree of the expression.
 % 
 % 
 % Example:
-% ?- parse_ocls_expr( "true" , X)
+% ?- parse_oclc_expr( "true" , X)
 % X = bool_const(1)
 
-parse_ocls_expr(Spec, Tree) :-
-  append("context C inv: ", Spec, Input),
-  parse_ocls( Input, spec([invariant(_, Tree)]) ).
-
+parse_oclc_expr( Spec, Tree ) :-
+  parse_oclc( Spec, spec([Tree]) ).
 
 %
-% OCL# type-checker - checking a specification in a parse tree
+% OCL- type-checker - checking a specification in a parse tree
 %
-% type_check_ocls( Model, Tree, Type )
+% type_check_oclc( Model, Tree, Type )
 % 
-% Compute the type of an expression (stored as a parse tree) and check 
+% Compute the type of an expression OCL- (stored as a parse tree) and check 
 % the types of subexpressions.
 % - Tree   (Input)  Parse tree of the specification.
 % - Type:  (Output) Type of the expression.
 % 
 % Example:
-% ?- type_check_ocls( plus(int_const(1), int_const(2))] , X)
+% ?- type_check_oclc( plus(int_const(1), int_const(2))] , X)
 % X = ctype(integer, 0, 1, undef, undef)
 
-type_check_ocls( Expr, Type ) :- 
-  ( type_check_ocls([], Expr, TheType) ->
+type_check_oclc( Expr, Type ) :- 
+  ( type_check_oclc([], Expr, TheType) ->
     Type = TheType
   ; write('Error: Type error in expression - '),
     write(Expr), nl,
@@ -71,31 +71,31 @@ type_check_ocls( Expr, Type ) :-
   ).
 
 %
-% OCL# type-checker - checking a OCL# expression in a string
+% OCL- type-checker - checking a OCL- expression in a string
 %
-% type_check_ocls_expr( Spec, Type )
+% type_check_oclc_expr( Spec, Type )
 % 
-% Compute the type of an expression (stored as a string) and check the 
+% Compute the type of an expression OCL- (stored as a string) and check the 
 % types of subexpressions. 
 % The method builds a fake invariant around the expression before passing it 
 % to the parser. As a result, type checking will fail for expressions 
 % including the "self" keyword.
 % - Model: (Input) List of variable definitions ([] if there are none).
-% - Spec:  (Input) OCL# Specification, between double quotes.
+% - Spec:  (Input) OCL- Specification, between double quotes.
 % - Tree:  (Output) Parse tree of the specification.
 % 
 % Example:
-% ?- type_check_ocls_expr( "1+2" , X)
+% ?- type_check_oclc_expr( "1+2" , X)
 % X = ctype(integer, 0, 1, undef, undef)
 
-type_check_ocls_expr( Spec, Type ) :-
-  parse_ocls_expr(Spec, Tree),
-  type_check_ocls(Tree, Type).
+type_check_oclc_expr( Spec, Type ) :-
+  parse_oclc_expr(Spec, Tree),
+  type_check_oclc(Tree, Type).
 
 %
-% OCL# evaluator - evaluate a specification in a parse tree
+% OCL- evaluator - evaluate a specification in a parse tree
 %
-% eval_ocls( ExprTree, Model, Result )
+% eval_oclc( ExprTree, Model, Result )
 % 
 % Evaluate an expression (provided as a parse tree) and compute the result.
 % - Tree:  (Input)  Parse tree of the expression to be evaluated.
@@ -103,66 +103,51 @@ type_check_ocls_expr( Spec, Type ) :-
 % - Result:(Output) Value of the result of the expression.
 % 
 % Example:
-% ?- eval_ocls( plus(int_const(1), int_const(2)), [] , X)
+% ?- eval_oclc( plus(int_const(1), int_const(2)), [] , X)
 % X = [3]
 
 %
 % OCL# evaluator - from a String
 %
-% eval_ocls_expr( Spec, Result )
+% eval_oclc_expr( Spec, Result )
 % 
 % Evaluate an expression (stored in a String) and compute the result.
-% The method builds a fake invariant around the expression before passing it 
-% to the parser. As a result, evaluation will fail for expressions including the
-% "self" keyword.
-% - Spec:  (Input)  OCL# Specification, between double quotes.
+% - Spec:  (Input)  OCL- Specification, between double quotes.
 % - Result:(Output) Value of the result of the expression.
 % 
 % Example:
-% ?- eval_ocls_expr( "1+2", X)
+% ?- eval_oclc_expr( "1+2", X)
 % X = [3]
 
-
-eval_ocls_expr( Spec, Type ) :-
-  parse_ocls_expr(Spec, Tree),
-  eval_ocls(Tree, [], Type).
+eval_oclc_expr( Spec, Type ) :-
+  write("Parsing "),
+  write(Spec), nl,
+  parse_oclc_expr(Spec, Tree),
+  eval_oclc(Tree, [], Type).
 
 % -- IMPLEMENTATION --------------------------------------------------------
 
 %
-% OCL# parser 
+% OCL- spec 
 %
 
-% A OCL# specification is a list of invariants
+% A OCL- specification is a list of expressions
 
-spec(spec([invariant(Class, Body)|Rest])) --> 
-   invariant(Class, Body), 
+spec(spec([Expr|Rest])) -->
+   expr(_, Expr),
    blanks,
    spec(spec(Rest)).
-spec(spec([])) --> 
+spec(spec([])) -->
    blanks.
 
-% An invariant defines a class name and a constraint 
+% Identifier in OCL-
 
-invariant(Class, Body) --> 
-   "context", 
-   blanks,
-   ident(Class),
-   blanks, 
-   "inv", 
-   blanks,
-   ":", 
-   blanks,
-   expr(Class, Body).
-
-% Identifier in OCL#
 ident(String) --> 
-   string_without(" \t\n\r.,-+*()><=:;|[]", StringCodes),
+   string_without(" \t\n\r.,-+*()><=:;|[]?", StringCodes),
    { nth0(0, StringCodes, _),
      string_codes(String, StringCodes) }.
 
-const_expr(Class, self(Class)) --> 
-   "self".
+% Constant expressions
 
 const_expr(_, bool_const(1)) --> 
    "true".
@@ -172,65 +157,6 @@ const_expr(_, bool_const(0)) -->
 
 const_expr(_, int_const(X)) -->
   integer(X).
-
-const_expr(Class, Expr) -->
-  "Set",
-  blanks,
-  "(",
-  type(Type),
-  ")",
-  blanks,
-  "{",
-  expression_list(Class, Elements),
-  { build_set(Type, Elements, Expr) }.
-
-const_expr(Class, Expr) -->
-  "Sequence",
-  blanks,
-  "(",
-  type(Type),
-  ")",
-  blanks,
-  "{",
-  expression_list(Class, Elements),
-  { build_sequence(Type, Elements, Expr) }.
-
-const_expr(Class, Expr) -->
-  "Bag",
-  blanks,
-  "(",
-  type(Type),
-  ")",
-  blanks,
-  "{",
-  expression_list(Class, Elements),
-  { build_bag(Type, Elements, Expr) }.
-
-const_expr(Class, Expr) -->
-  "OrderedSet",
-  blanks,
-  "(",
-  type(Type),
-  ")",
-  blanks,
-  "{",
-  expression_list(Class, Elements),
-  { build_ordered_set(Type, Elements, Expr) }.
-
-expression_list(_, []) -->  
-  blanks,
-  "}".
-
-expression_list(Class, [H|T]) -->
-  expr(Class, H),
-  blanks,
-  rest_expression_list(Class, T). 
-
-rest_expression_list(_, []) -->
-  "}".
-rest_expression_list(Class, T) -->
-  ",",
-  expression_list(Class, T).
 
 ident_expr(_, ident(Name)) -->
   ident(Name).
@@ -243,117 +169,70 @@ paren_expr(Class, Exp) -->
   blanks,
   ")".
 
+all_expr(_, all(Class)) --> 
+   "all",
+   blanks,
+   ident(Class).
+
 null_expr(_, null(Type)) -->
    "no",
    blanks,
-   "(",
-   blanks,
-   type(Type),
-   blanks,
-   ")".
+   type(Type).
 
-all_instances_expr(_, all_instances(Class)) --> 
-   ident(Class),
-   blanks,
-   ".",
-   blanks,
-   "allInstances",
-   blanks,
-   "(",
-   blanks,
-   ")".
+%change_sign_expr(Class, negative(Exp)) -->
+%  "-",
+%  blanks,
+%  expr(Class, Exp).
 
-change_sign_expr(Class, negative(Exp)) -->
-  "-",
-  blanks,
-  expr(Class, Exp).
+%not_expr(Class, not(Exp)) -->
+%  "not",
+%  blanks,
+%  expr(Class, Exp).
 
-not_expr(Class, not(Exp)) -->
-  "not",
-  blanks,
-  expr(Class, Exp).
-
-if_expr(Class, if_then_else(Exp1, Exp2, Exp3)) -->
-  "if",
-  blanks,
-  expr(Class,Exp1),
-  blanks,
-  "then",
+if_expr(Class, Inherited, if_then_else(Inherited, Exp2, Exp3)) -->
+  "?",
   blanks,
   expr(Class,Exp2),
   blanks,
-  "else",
+  ":",
   blanks,
-  expr(Class,Exp3), 
-  blanks,
-  "endif".
+  expr(Class,Exp3).
 
-dot_expr(_, Exp1, field(Exp1, FieldName)) -->
+as_expr(_, Inherited, as_type(Inherited, Type)) -->
+   "as",
+   blanks,
+   type(Type).
+
+dot_expr(_, Inherited, property(Inherited, FieldName)) -->
   ".",
   blanks,
   ident(FieldName).
 
-arrow_expr(Class, Exp1, Exp2) -->
+merge_expr(Class, Inherited, merge(Inherited, Exp2)) -->
+  "merge",
+  blanks,
+  expr(Class, Exp2). 
+
+lift_expr(_, Inherited, lift(Inherited)) -->
+  blanks,
+  "lift".
+
+lower_expr(_, Inherited, lower(Inherited)) -->
+  blanks,
+  "lower".
+
+iterate_expr(Class, Inherited, iterate(Inherited, Var1, Var2, Exp2, Exp3)) -->
   "->",
   blanks,
-  after_arrow_expr(Class, Exp1, Exp2).
-
-after_arrow_expr(Class, Exp1, Exp2) --> including_expr(Class, Exp1, Exp2).
-after_arrow_expr(Class, Exp1, Exp2) --> iterate_expr(Class, Exp1, Exp2).
-after_arrow_expr(Class, Exp1, Exp2) --> as_set_expr(Class, Exp1, Exp2).
-after_arrow_expr(Class, Exp1, Exp2) --> as_bag_expr(Class, Exp1, Exp2).
-after_arrow_expr(Class, Exp1, Exp2) --> as_sequence_expr(Class, Exp1, Exp2).
-after_arrow_expr(Class, Exp1, Exp2) --> as_ordered_set_expr(Class, Exp1, Exp2).
-
-including_expr(Class, Exp1, including(Exp1,Exp2)) -->
-  "including",
-  blanks,
-  "(",
-  blanks,
-  expr(Class,Exp2),
-  blanks,
-  ")".
-
-as_set_expr(_, Exp, as_set(Exp)) -->
-  "asSet",
-  blanks,
-  "(",
-  blanks,
-  ")".  
-
-as_bag_expr(_, Exp, as_bag(Exp)) -->
-  "asBag",
-  blanks,
-  "(",
-  blanks,
-  ")".  
-
-as_sequence_expr(_, Exp, as_sequence(Exp)) -->
-  "asSequence",
-  blanks,
-  "(",
-  blanks,
-  ")".  
-
-as_ordered_set_expr(_, Exp, as_ordered_set(Exp)) -->
-  "asOrderedSet",
-  blanks,
-  "(",
-  blanks,
-  ")".  
-
-iterate_expr(Class, Exp1, iterate(Exp1, Var1, Var2, Exp2, Exp3)) -->
-  "iterate",
-  blanks,
-  "(",
+  "[",
   blanks,
   ident(Var1),
   blanks,
-  ";",
+  "|",
   blanks,
   ident(Var2),
   blanks,
-  "=",
+  "<-",
   blanks,
   expr(Class, Exp2),
   blanks,
@@ -361,7 +240,7 @@ iterate_expr(Class, Exp1, iterate(Exp1, Var1, Var2, Exp2, Exp3)) -->
   blanks,
   expr(Class, Exp3),
   blanks,
-  ")".  
+  "]".
 
 eq_expr(Class, equals(Exp1, Exp2)) -->
   boolean_expr(Class, Exp1),
@@ -387,6 +266,11 @@ rest_boolean_expr(Class, Exp1, or(Exp1, Exp2)) -->
    blanks,
    expr(Class, Exp2).
 
+rest_boolean_expr(Class, Exp1, exclusive_or(Exp1, Exp2)) -->
+   "xor",
+   blanks,
+   expr(Class, Exp2).
+
 plus_minus_expr(Class, Y) --> 
   mult_div_expr(Class, X),
   blanks,
@@ -409,7 +293,6 @@ mult_div_expr(Class, Y) -->
    blanks,
    rest_mult_div_expr(Class, X, Y).
 
-
 rest_mult_div_expr(_, Exp, Exp) --> [].
 
 rest_mult_div_expr(Class, Exp1, mult(Exp1, Exp2)) -->
@@ -428,25 +311,36 @@ left_expr(Class, Exp) -->
    rest_expr(Class, Inherit, Exp).
 
 base_expr(Class, Exp) --> const_expr(Class, Exp).
-base_expr(Class, Exp) --> ident_expr(Class, Exp).
+base_expr(Class, Exp) --> all_expr(Class, Exp).
 base_expr(Class, Exp) --> null_expr(Class, Exp).
+base_expr(Class, Exp) --> ident_expr(Class, Exp).
 base_expr(Class, Exp) --> paren_expr(Class, Exp).
-base_expr(Class, Exp) --> all_instances_expr(Class, Exp).
-base_expr(Class, Exp) --> not_expr(Class, Exp).
-base_expr(Class, Exp) --> if_expr(Class, Exp).
-base_expr(Class, Exp) --> change_sign_expr(Class, Exp).
 
 expr(Class, Exp) --> eq_expr(Class, Exp).
 expr(Class, Exp) --> boolean_expr(Class, Exp).
 
 rest_expr(Class, Inherited, Result) --> 
-   dot_expr(Class, Inherited, Result1),
+   as_expr(Class, Inherited, Result1),
    rest_expr(Class, Result1, Result).
 rest_expr(Class, Inherited, Result) --> 
-   arrow_expr(Class, Inherited, Result1),
+   dot_expr(Class, Inherited, Result1),
    rest_expr(Class, Result1, Result).
+rest_expr(Class, Inherited, Result) -->
+   merge_expr(Class, Inherited, Result1),
+   rest_expr(Class, Result1, Result).
+rest_expr(Class, Inherited, Result) -->
+   lift_expr(Class, Inherited, Result1),
+   rest_expr(Class, Result1, Result).
+rest_expr(Class, Inherited, Result) -->
+   lower_expr(Class, Inherited, Result1),
+   rest_expr(Class, Result1, Result).
+rest_expr(Class, Inherited, Result) -->
+   if_expr(Class, Inherited, Result1),
+   rest_expr(Class, Result1, Result).   
+rest_expr(Class, Inherited, Result) -->
+   iterate_expr(Class, Inherited, Result1),
+   rest_expr(Class, Result1, Result).   
 rest_expr(_, Result, Result) --> [].
-
 
 % Types in OCL#
 
@@ -455,7 +349,7 @@ type(boolean) -->
 type(integer) -->
   "int".
 type(any) -->
-  "OclAny".
+  "any".
 type(class(Name)) -->
   ident(Name).
 type(set(Type)) -->
@@ -475,7 +369,7 @@ type(bag(Type)) -->
   blanks,
   ")".
 type(sequence(Type)) -->
-  "Sequence",
+  "Seq",
   blanks,
   "(",
   blanks,
@@ -483,31 +377,13 @@ type(sequence(Type)) -->
   blanks,
   ")".
 type(ordered_set(Type)) -->
-  "OrderedSet",
+  "OSet",
   blanks,
   "(",
   blanks,
   type(Type),
   blanks,
   ")".
-
-build_set(Type, Elements, Expr) :-
-  reverse(Elements, Reversed),
-  add_elements(as_set(null(Type)), Reversed, Expr).
-build_bag(Type, Elements, Expr) :-
-  reverse(Elements, Reversed),
-  add_elements(as_bag(null(Type)), Reversed, Expr).
-build_ordered_set(Type, Elements, Expr) :-
-  reverse(Elements, Reversed),
-  add_elements(as_ordered_set(null(Type)), Reversed, Expr).
-build_sequence(Type, Elements, Expr) :-
-  reverse(Elements, Reversed),
-  add_elements(as_sequence(null(Type)), Reversed, Expr).
-
-add_elements(Expr, [], Expr).
-add_elements(SubExpr, [H|T], Expr) :-
-  add_elements(SubExpr, T, Aux),
-  Expr = including(Aux, H).
 
 %
 % OCL# type checking
@@ -622,7 +498,6 @@ multiplicity_less_eq_than(X, Y, 0) :-
 
 % subtype( SubType, SuperType ) - reified and non-reified versions
 
-
 less_than_annotation(X, X, 1).
 less_than_annotation(undef, _, 1).
 less_than_annotation(X, undef, 0) :- number(X).
@@ -699,9 +574,9 @@ lub_type(Type1, Type2, Result) :-
 
 % Type check for binary expressions
 
-type_check_binary_boolean_expr(Model, Exp1, Exp2, Type) :-
-   type_check_ocls(Model, Exp1, Subtype1),
-   type_check_ocls(Model, Exp2, Subtype2),
+oclc_type_check_binary_boolean_expr(Model, Exp1, Exp2, Type) :-
+   type_check_oclc(Model, Exp1, Subtype1),
+   type_check_oclc(Model, Exp2, Subtype2),
    % Subexpression 1 should be boolean with max multiplicity 1
    assertion(scalar(Subtype1, 0)),
    assertion(member(Subtype1, boolean)),
@@ -717,9 +592,9 @@ type_check_binary_boolean_expr(Model, Exp1, Exp2, Type) :-
    write('- and: '), write(Exp1), write(' , '),  write(Exp2), nl, 
    write('  Type: '), write(Type), nl.
 
-type_check_binary_integer_expr(Model, Exp1, Exp2, Type) :-
-   type_check_ocls(Model, Exp1, Subtype1),
-   type_check_ocls(Model, Exp2, Subtype2),
+oclc_type_check_binary_integer_expr(Model, Exp1, Exp2, Type) :-
+   type_check_oclc(Model, Exp1, Subtype1),
+   type_check_oclc(Model, Exp2, Subtype2),
    % Subexpression 1 should be integer with max multiplicity 1
    assertion(scalar(Subtype1, 0)),
    assertion(member(Subtype1, integer)),
@@ -737,133 +612,118 @@ type_check_binary_integer_expr(Model, Exp1, Exp2, Type) :-
 
 % Type casts (asSet / asBag / asSequence / asOrderedSet)
 
-type_check_as_collection_expr(_, Subtype, Type, Un, Ord) :-
+oclc_type_check_as_collection_expr(_, Subtype, Type, Un, Ord) :-
   scalar(Subtype, 1),  
   Type = ctype(Subtype, 0, "*", Un, Ord).
 
-type_check_as_collection_expr(_, Subtype, Type, Un, Ord) :-
+oclc_type_check_as_collection_expr(_, Subtype, Type, Un, Ord) :-
   scalar(Subtype, 0),
   member(Subtype, M),  
   Type = ctype(M, 0, "*", Un, Ord).
 
 % Type checking type declarations
 
-type_check_ocls(_, any, any).
-type_check_ocls(_, boolean, boolean).
-type_check_ocls(_, integer, integer).
-type_check_ocls(_, class(Classname), class(Classname)).
-type_check_ocls(Model, set(T), X) :-
-  type_check_ocls(Model, T, MemberType),
+type_check_oclc(_, any, any).
+type_check_oclc(_, boolean, boolean).
+type_check_oclc(_, integer, integer).
+type_check_oclc(_, class(Classname), class(Classname)).
+type_check_oclc(Model, set(T), X) :-
+  type_check_oclc(Model, T, MemberType),
   set_type(MemberType, X).
-type_check_ocls(Model, bag(T), X) :-
-  type_check_ocls(Model, T, MemberType),
+type_check_oclc(Model, bag(T), X) :-
+  type_check_oclc(Model, T, MemberType),
   bag_type(MemberType, X).
-type_check_ocls(Model, sequence(T), X) :-
-  type_check_ocls(Model, T, MemberType),
+type_check_oclc(Model, sequence(T), X) :-
+  type_check_oclc(Model, T, MemberType),
   sequence_type(MemberType, X).
-type_check_ocls(Model, ordered_set(T), X) :-
-  type_check_ocls(Model, T, MemberType),
+type_check_oclc(Model, ordered_set(T), X) :-
+  type_check_oclc(Model, T, MemberType),
   ordered_set_type(MemberType, X).
 
 % Basic type checking
-type_check_ocls(_, spec([]), _).
+type_check_oclc(_, spec([]), _).
 
-type_check_ocls(Model, spec([H|T]), _) :- 
-   type_check_ocls(Model, H, _),
-   type_check_ocls(Model, spec(T), _).
-
-type_check_ocls(Model, invariant(Class, Body), _) :- 
-   write('* Invariant of class '), write(Class), nl, nl,
-   type_check_ocls(Model, Body, Type),
-   % Body should be boolean with max multiplicity 1
+type_check_oclc(Model, spec([H|T]), _) :- 
+   type_check_oclc(Model, H, Type),
+   % Outermost expression should be boolean with max multiplicity 1
    assertion(scalar(Type, 0)),
    assertion(member(Type, boolean)),
    assertion(upp(Type, 1)),
-   write('- Body: '), write(Body), nl, 
-   write('  Type: '), write(Type), nl, nl.
+   write('- Expression: '), write(H), nl, 
+   write('  Type: '), write(Type), nl, nl,
+   type_check_oclc(Model, spec(T), _).
 
-type_check_ocls(_, int_const(I), Type) :-
-   %TODO: Testing nullables
-   %option_type(integer, Type),
+type_check_oclc(_, int_const(I), Type) :-
    singleton_type(integer, Type),
    write('- Integer constant '), write(I), nl, write('  Type: '), write(Type), nl.
 
-type_check_ocls(_, bool_const(B), Type) :-
-   %TODO: Testing nullables
-   %option_type(boolean, Type),
+type_check_oclc(_, bool_const(B), Type) :-
    singleton_type(boolean, Type),
    write('- Boolean constant '), write(B), nl, write('  Type: '), write(Type), nl.
 
-type_check_ocls(_, self(Classname), Type) :-
-   singleton_type(class(Classname), Type).
-
-type_check_ocls(Model, null(T), Type) :-
-   type_check_ocls(Model, T, Subtype),
+type_check_oclc(Model, null(T), Type) :-
+   type_check_oclc(Model, T, Subtype),
    option_type(Subtype, Type),
    write('- Base type for no: '), write(T), nl,
    write('- Output type for no: '), write(Type), nl.
 
-type_check_ocls(_, all_instances(Classname), Type) :-
+type_check_oclc(_, all(Classname), Type) :-
    set_type(class(Classname), Type).
 
-type_check_ocls(Model, not(Exp), Type) :-
-   type_check_ocls(Model, Exp, Subtype),
-   % Subexpression should be boolean with max multiplicity 1
-   assertion(scalar(Subtype, 0)),
-   assertion(member(Subtype, boolean)),
-   assertion(upp(Subtype, 1)),
-   low(Subtype, Low),
-   Type = ctype(boolean, Low, 1, undef, undef),
-   write('- Not '), write(Exp), nl, write('  Type: '), write(Type), nl.
-
-type_check_ocls(Model, negative(Exp), Type) :-
-   type_check_ocls(Model, Exp, Subtype),
-   % Subexpression should be integer with max multiplicity 1
-   assertion(scalar(Subtype, 0)),
-   assertion(member(Subtype, integer)),
-   assertion(upp(Subtype, 1)),
-   low(Subtype, Low),
-   Type = ctype(integer, Low, 1, undef, undef),
-   write('- Minus '), write(Exp), nl, write('  Type: '), write(Type), nl.
-
-type_check_ocls(Model, and(Exp1, Exp2), Type) :-
-   type_check_binary_boolean_expr(Model, Exp1, Exp2, Type).
-type_check_ocls(Model, or(Exp1, Exp2), Type) :-
-   type_check_binary_boolean_expr(Model, Exp1, Exp2, Type).
+type_check_oclc(Model, and(Exp1, Exp2), Type) :-
+   oclc_type_check_binary_boolean_expr(Model, Exp1, Exp2, Type).
+type_check_oclc(Model, or(Exp1, Exp2), Type) :-
+   oclc_type_check_binary_boolean_expr(Model, Exp1, Exp2, Type).
+type_check_oclc(Model, exclusive_or(Exp1, Exp2), Type) :-
+   oclc_type_check_binary_boolean_expr(Model, Exp1, Exp2, Type).   
   
-type_check_ocls(Model, plus(Exp1, Exp2), Type) :-
-  type_check_binary_integer_expr(Model, Exp1, Exp2, Type).
-type_check_ocls(Model, minus(Exp1, Exp2), Type) :-
-  type_check_binary_integer_expr(Model, Exp1, Exp2, Type).
-type_check_ocls(Model, mult(Exp1, Exp2), Type) :-
-  type_check_binary_integer_expr(Model, Exp1, Exp2, Type).
-type_check_ocls(Model, divide(Exp1, Exp2), Type) :-
-  type_check_binary_integer_expr(Model, Exp1, Exp2, Type).
+type_check_oclc(Model, plus(Exp1, Exp2), Type) :-
+  oclc_type_check_binary_integer_expr(Model, Exp1, Exp2, Type).
+type_check_oclc(Model, minus(Exp1, Exp2), Type) :-
+  oclc_type_check_binary_integer_expr(Model, Exp1, Exp2, Type).
+type_check_oclc(Model, mult(Exp1, Exp2), Type) :-
+  oclc_type_check_binary_integer_expr(Model, Exp1, Exp2, Type).
+type_check_oclc(Model, divide(Exp1, Exp2), Type) :-
+  oclc_type_check_binary_integer_expr(Model, Exp1, Exp2, Type).
 
-type_check_ocls(Model, as_set(Exp), Type) :-
-  type_check_ocls(Model, Exp, Subtype),
-  % Unique, Non-ordered
-  type_check_as_collection_expr(Exp, Subtype, Type, 1, 0).
+%type_check_oclc(Model, as_type(Exp, class(X)), Type) :-
+%  format('Type:~w~n', [X]),
+%  atom_chars(X, AB),
+%  format('Type:~w~n', [AB]),
+%  format('Type:~w~n', ['Set']),
+% compare(Z,X,"Set"),
+% format('Type:~w~n', ["Set"]),
+% compare(W,AB,"Set"),
+%  format('Type:~w~n', [W]),
+%  atom_codes(X, Y),
+%  format('Type:~w~n', [Y]),
+%  type_check_oclc(Model, Exp, Subtype),
+% oclc_type_check_as_collection_expr(Exp, Subtype, Type, 1, 0).
 
-type_check_ocls(Model, as_bag(Exp), Type) :-
-  type_check_ocls(Model, Exp, Subtype),
-  % Non-unique, Non-ordered
-  type_check_as_collection_expr(Exp, Subtype, Type, 0, 0).
+type_check_oclc(Model, as_type(Exp, class(X)), Type) :-
+  atom_chars(X, "Set"),
+  type_check_oclc(Model, Exp, Subtype),
+  oclc_type_check_as_collection_expr(Exp, Subtype, Type, 1, 0).
 
-type_check_ocls(Model, as_sequence(Exp), Type) :-
-  type_check_ocls(Model, Exp, Subtype),
-  % Non-unique, Ordered
-  type_check_as_collection_expr(Exp, Subtype, Type, 0, 1).
+type_check_oclc(Model, as_type(Exp, class(X)), Type) :-
+  atom_chars(X, "Seq"),
+  type_check_oclc(Model, Exp, Subtype),
+  oclc_type_check_as_collection_expr(Exp, Subtype, Type, 0, 1).
 
-type_check_ocls(Model, as_ordered_set(Exp), Type) :-
-  type_check_ocls(Model, Exp, Subtype),
-  % Unique, Ordered
-  type_check_as_collection_expr(Exp, Subtype, Type, 1, 1).
+type_check_oclc(Model, as_type(Exp, class(X)), Type) :-
+  atom_chars(X, "Bag"),
+  type_check_oclc(Model, Exp, Subtype),
+  oclc_type_check_as_collection_expr(Exp, Subtype, Type, 0, 0).
 
-type_check_ocls(Model, if_then_else(Exp1, Exp2, Exp3), Type) :-
-  type_check_ocls(Model, Exp1, Type1),
-  type_check_ocls(Model, Exp2, Type2),
-  type_check_ocls(Model, Exp3, Type3),
+type_check_oclc(Model, as_type(Exp, class(X)), Type) :-
+  atom_chars(X, "OSet"),
+  type_check_oclc(Model, Exp, Subtype),
+  oclc_type_check_as_collection_expr(Exp, Subtype, Type, 1, 1).
+
+type_check_oclc(Model, if_then_else(Exp1, Exp2, Exp3), Type) :-
+  type_check_oclc(Model, Exp1, Type1),
+  type_check_oclc(Model, Exp2, Type2),
+  type_check_oclc(Model, Exp3, Type3),
   % Condition should be a boolean with maximum multiplicity 1
   assertion(scalar(Type1, 0)),
   assertion(member(Type1, boolean)),
@@ -872,9 +732,9 @@ type_check_ocls(Model, if_then_else(Exp1, Exp2, Exp3), Type) :-
   lub_type(Type2, Type3, Type),
   write('- if then else type: '), write(Type), nl.
 
-type_check_ocls(Model, equals(Exp1, Exp2), Type) :-
-  type_check_ocls(Model, Exp1, Type1),
-  type_check_ocls(Model, Exp2, Type2),
+type_check_oclc(Model, equals(Exp1, Exp2), Type) :-
+  type_check_oclc(Model, Exp1, Type1),
+  type_check_oclc(Model, Exp2, Type2),
   % Either Type1 is a subtype of Type2 or vice-versa
   subtype(Type1, Type2, IsSubtype1),
   subtype(Type2, Type1, IsSubtype2),
@@ -883,14 +743,14 @@ type_check_ocls(Model, equals(Exp1, Exp2), Type) :-
   singleton_type(boolean, Type).
 
 
-%type_check_ocls(field(Exp1, FieldName), Type) :-
+%type_check_oclc(property(Exp1, FieldName), Type) :-
 
-type_check_ocls(Model, ident(String), Type) :-
+type_check_oclc(Model, ident(String), Type) :-
   lookup_variable( Model, String, Type, _ ).
 
-type_check_ocls(Model, including(Exp1,Exp2), Type) :-
-  type_check_ocls(Model, Exp1, Type1),
-  type_check_ocls(Model, Exp2, Type2),
+type_check_oclc(Model, merge(Exp1,Exp2), Type) :-
+  type_check_oclc(Model, Exp1, Type1),
+  type_check_oclc(Model, Exp2, Type2),
   % e1 cannot be an scalar
   assertion(scalar(Type1, 0)),
   Type1 = ctype(M1, L1, U1, Un1, Ord1),
@@ -916,17 +776,28 @@ type_check_ocls(Model, including(Exp1,Exp2), Type) :-
     assertion( false )
   ).
 
-type_check_ocls(Model, iterate(Exp1, Var1, Var2, Exp2, Exp3), Type) :-
+type_check_oclc(Model, lift(Exp), Type) :-
+  % Check the type of the expression being lowered
+  type_check_oclc(Model, Exp, Subtype),
+  singleton_type(Subtype, Type).
+
+type_check_oclc(Model, lower(Exp), Type) :-
+  % Check the type of the expression being lowered
+  type_check_oclc(Model, Exp, Subtype),
+  % This type cannot be an scalar and must have upper multiplicity equal to 1
+  assertion(scalar(Subtype, 0)),
+  assertion(upp(Subtype, 1)),
+  member(Subtype, Type).
+
+type_check_oclc(Model, iterate(Exp1, Var1, Var2, Exp2, Exp3), Type) :-
   
   % Check value of the initialization expression
-  type_check_ocls(Model, Exp2, Type2),
-  %TODO: Testing nullables
-  %declare_variable(Model, Var2, Type2, _, AuxModel1),
+  type_check_oclc(Model, Exp2, Type2),
   nullable_type(Type2, NullableType2),
   declare_variable(Model, Var2, NullableType2, _, AuxModel1),
   
   % Exp1 should not be a scalar
-  type_check_ocls(Model, Exp1, Type1),
+  type_check_oclc(Model, Exp1, Type1),
   assertion(scalar(Type1, 0)),
   member(Type1, MemberType),
 
@@ -938,7 +809,7 @@ type_check_ocls(Model, iterate(Exp1, Var1, Var2, Exp2, Exp3), Type) :-
   ),
 
   % Check types of the accumulated expression
-  type_check_ocls(AuxModel2, Exp3, Type3),
+  type_check_oclc(AuxModel2, Exp3, Type3),
   % Type3 should be a subtype of Type2
   assertion(subtype(Type2, Type3, 1)),
   Type = Type2.
@@ -949,9 +820,9 @@ type_check_ocls(Model, iterate(Exp1, Var1, Var2, Exp2, Exp3), Type) :-
 
 
 %
-% OCL# expression evaluation
+% OCL- expression evaluation
 %
-% eval_ocls(Tree, Result).
+% eval_oclc(Tree, Model, Result).
 
 
 % Add elements to the different types of collections
@@ -978,7 +849,7 @@ set_add( Set, Elem, Result ) :-
   ( lists:member(Elem, Set) ->
     Result = Set
   ; 
-    append( Set, [Elem], Result )
+    Result = [ Elem | Set ]
   ).
 
 set_add_all( Col1, [], Result ) :- 
@@ -1031,8 +902,8 @@ make_set( List , Set ) :- list_to_set(List, Set).
 % Normalize a given collection
 
 normalize(Exp, Model, Result) :-
-  eval_ocls(Exp, Model, Value),
-  type_check_ocls(Model, Exp, Type),
+  eval_oclc(Exp, Model, Value),
+  type_check_oclc(Model, Exp, Type),
   normalize_values(Value, Type, Result).
 
 
@@ -1060,31 +931,13 @@ normalize_single_value(Value, Type, Result) :-
     normalize_values(Value, Type, Result)
   ).
 
-eval_ocls( null(_), _, [] ).
-eval_ocls( int_const(Value),  _,  [ Value ] ).
-eval_ocls( bool_const(Value), _, [ Value ] ).
+eval_oclc( null(_), _, [] ).
+eval_oclc( int_const(Value),  _,  [ Value ] ).
+eval_oclc( bool_const(Value), _, [ Value ] ).
 
-eval_ocls( not(Exp), Model, [ Result ] ):- 
-  eval_ocls(Exp, Model, Value),
-  ( Value = [] ->
-    Result = []
-    ;
-    Value = [BoolValue],
-    Result is 1-BoolValue 
-    ).
-
-eval_ocls( negative(Exp), Model, [ Result ] ):- 
-  eval_ocls(Exp, Model, Value),
-  ( Value = [] ->
-    Result = []
-    ;
-    Value = [IntValue],
-    Result is -IntValue 
-    ).
-
-eval_ocls( and(Exp1, Exp2), Model,[ Result ] ):- 
-  eval_ocls(Exp1, Model, Value1),
-  eval_ocls(Exp2, Model, Value2),
+eval_oclc( and(Exp1, Exp2), Model,[ Result ] ):- 
+  eval_oclc(Exp1, Model, Value1),
+  eval_oclc(Exp2, Model, Value2),
   ( Value1 = [] ->
     Result = []
     ;
@@ -1096,9 +949,9 @@ eval_ocls( and(Exp1, Exp2), Model,[ Result ] ):-
     Result is min(BoolValue1, BoolValue2) 
     ).
 
-eval_ocls( or(Exp1, Exp2), Model, [ Result ] ):- 
-  eval_ocls(Exp1, Model, Value1),
-  eval_ocls(Exp2, Model, Value2),
+eval_oclc( or(Exp1, Exp2), Model, [ Result ] ):- 
+  eval_oclc(Exp1, Model, Value1),
+  eval_oclc(Exp2, Model, Value2),
   ( Value1 = [] -> 
     Result = []
     ;
@@ -1110,9 +963,9 @@ eval_ocls( or(Exp1, Exp2), Model, [ Result ] ):-
     Result is max(BoolValue1, BoolValue2)    
   ).
 
-eval_ocls( plus(Exp1, Exp2), Model, [ Result ] ):- 
-  eval_ocls(Exp1, Model, Value1),
-  eval_ocls(Exp2, Model, Value2),
+eval_oclc( plus(Exp1, Exp2), Model, [ Result ] ):- 
+  eval_oclc(Exp1, Model, Value1),
+  eval_oclc(Exp2, Model, Value2),
   ( Value1 = [] -> 
     Result = []
     ;
@@ -1125,9 +978,9 @@ eval_ocls( plus(Exp1, Exp2), Model, [ Result ] ):-
     ).
 
 
-eval_ocls( minus(Exp1, Exp2), Model, [ Result ] ):- 
-  eval_ocls(Exp1, Model, Value1),
-  eval_ocls(Exp2, Model, Value2),
+eval_oclc( minus(Exp1, Exp2), Model, [ Result ] ):- 
+  eval_oclc(Exp1, Model, Value1),
+  eval_oclc(Exp2, Model, Value2),
   ( Value1 = [] -> 
     Result = []
     ;
@@ -1140,9 +993,9 @@ eval_ocls( minus(Exp1, Exp2), Model, [ Result ] ):-
     ).
 
 
-eval_ocls( mult(Exp1, Exp2), Model, [ Result ] ):- 
-  eval_ocls(Exp1, Model, Value1),
-  eval_ocls(Exp2, Model, Value2),
+eval_oclc( mult(Exp1, Exp2), Model, [ Result ] ):- 
+  eval_oclc(Exp1, Model, Value1),
+  eval_oclc(Exp2, Model, Value2),
   ( Value1 = [] -> 
     Result = []
     ;
@@ -1155,9 +1008,9 @@ eval_ocls( mult(Exp1, Exp2), Model, [ Result ] ):-
     ).
 
 
-eval_ocls( divide(Exp1, Exp2), Model, [ Result ] ):- 
-  eval_ocls(Exp1, Model, Value1),
-  eval_ocls(Exp2, Model, Value2),
+eval_oclc( divide(Exp1, Exp2), Model, [ Result ] ):- 
+  eval_oclc(Exp1, Model, Value1),
+  eval_oclc(Exp2, Model, Value2),
   ( Value1 = [] -> 
     Result = []
     ;
@@ -1169,41 +1022,45 @@ eval_ocls( divide(Exp1, Exp2), Model, [ Result ] ):-
     Result is div(IntValue1, IntValue2) 
     ).
 
-eval_ocls( if_then_else(Exp1, Exp2, Exp3), Model, Result ) :-
-  eval_ocls(Exp1, Model, Value1),
+eval_oclc( if_then_else(Exp1, Exp2, Exp3), Model, Result ) :-
+  eval_oclc(Exp1, Model, Value1),
   ( Value1 = [BoolValue1],
     BoolValue1 = 1 ->
-    eval_ocls(Exp2, Model, Value2),
+    eval_oclc(Exp2, Model, Value2),
     Result = Value2
   ; Value1 = [BoolValue1],
     BoolValue1 = 0 ->
-    eval_ocls(Exp3, Model, Value3),
+    eval_oclc(Exp3, Model, Value3),
     Result = Value3
   ; Value1 = [] ->
     Result = []
   ).
-  
-eval_ocls( as_set(Exp), Model, Result ) :-
-  eval_ocls(Exp, Model, Value),
+
+eval_oclc( as_type(Exp, class(X)), Model, Result ) :-
+  atom_chars(X, "Set"),
+  eval_oclc(Exp, Model, Value),
   make_set(Value, Result).
 
-eval_ocls( as_sequence(Exp), Model, Result ) :-
-  eval_ocls(Exp, Model, Value),
+eval_oclc( as_type(Exp, class(X)), Model, Result ) :-
+  atom_chars(X, "Seq"),
+  eval_oclc(Exp, Model, Value),
   Result = Value.
 
-eval_ocls( as_ordered_set(Exp), Model, Result ) :-
-  eval_ocls(Exp, Model, Value),
+eval_oclc( as_type(Exp, class(X)), Model, Result ) :-
+  atom_chars(X, "OSet"),
+  eval_oclc(Exp, Model, Value),
   make_set(Value, Result).
 
-eval_ocls( as_bag(Exp), Model, Result ) :-
-  eval_ocls(Exp, Model, Value),
+eval_oclc( as_type(Exp, class(X)), Model, Result ) :-
+  atom_chars(X, "Bag"),
+  eval_oclc(Exp, Model, Value),
   Result = Value.
 
-eval_ocls( including(Exp1, Exp2), Model, Result ) :-
-  eval_ocls(Exp1, Model, Value1),
-  eval_ocls(Exp2, Model, Value2),
-  type_check_ocls(Model, Exp1, Type1),
-  type_check_ocls(Model, Exp2, Type2),
+eval_oclc( merge(Exp1, Exp2), Model, Result ) :-
+  eval_oclc(Exp1, Model, Value1),
+  eval_oclc(Exp2, Model, Value2),
+  type_check_oclc(Model, Exp1, Type1),
+  type_check_oclc(Model, Exp2, Type2),
   member(Type1, MemberType),
   % Check if we are adding a single element or several
   ( subtype(Type2, MemberType) ->
@@ -1214,7 +1071,7 @@ eval_ocls( including(Exp1, Exp2), Model, Result ) :-
     collection_add_all(Type1, Value1, Value2, Result)
   ).
 
-eval_ocls( equals(Exp1, Exp2), Model, Result ) :-
+eval_oclc( equals(Exp1, Exp2), Model, Result ) :-
   normalize(Exp1, Model, Norm1),
   normalize(Exp2, Model, Norm2),
   write('First  '), write(Norm1), nl,
@@ -1224,27 +1081,45 @@ eval_ocls( equals(Exp1, Exp2), Model, Result ) :-
   ; Result = [0] 
   ).
 
-eval_ocls( iterate(Exp1, Var1, Var2, Exp2, Exp3), Model, Result ) :-
+eval_oclc( iterate(Exp1, Var1, Var2, Exp2, Exp3), Model, Result ) :-
   % Get the types of the 
-  type_check_ocls(Model, Exp1, ColType),
+  type_check_oclc(Model, Exp1, ColType),
   member(ColType, MemberType),
   %TODO: Testing nullables
   %type_check_ocls(Model,Exp2, AccType),
   
-  type_check_ocls(Model,Exp2, AuxType),
+  type_check_oclc(Model,Exp2, AuxType),
   nullable_type(AuxType, AccType),
 
   % Evaluate the collection
-  eval_ocls(Exp1, Model, Col),
+  eval_oclc(Exp1, Model, Col),
 
   % Initialize the accumulator 
-  eval_ocls(Exp2, Model, FirstValue),
+  eval_oclc(Exp2, Model, FirstValue),
 
   % Start the iterate over all elements of the collection  
   eval_iterate(Col, Var1, MemberType, Var2, AccType, FirstValue, Exp3, Model, Result ).
 
-eval_ocls( ident(Var), Model, Result ) :-
+eval_oclc( ident(Var), Model, Result ) :-
   lookup_variable(Model, Var, _, Result).
+
+eval_oclc( lower(Exp), Model, Result ) :-
+  % Check types
+  type_check_oclc(Model, Exp, _),
+  % Evaluate subexpression
+  eval_oclc(Exp, Model, Aux),
+  % Subexpression must be producing a collection with exactly one element
+  assertion(length(Aux), 1),
+  % The result is the element outside of a collection
+  Aux = [Result].
+
+eval_oclc( lift(Exp), Model, Result ) :-
+  % Check types
+  type_check_oclc(Model, Exp, _),
+  % Evaluate subexpression
+  eval_oclc(Exp, Model, Aux),
+  % The result encapsulates the subexpression in a collection
+  Result = [Aux].
 
 % all_instances
 % self 
@@ -1272,7 +1147,7 @@ eval_iterate( [ Elem | Rest ], ElemVar, ElemType, AccVar, AccType, CurrentValue,
   % Initialize the accumulator variable with the current value,
   declare_variable(AuxModel1, AccVar, AccType, CurrentValue, AuxModel2),
 
-  eval_ocls( AccExp, AuxModel2, NewValue ),
+  eval_oclc( AccExp, AuxModel2, NewValue ),
 
   % Retrieve the value of the accumulator at the end of the collection - this is the result
   eval_iterate( Rest, ElemVar, ElemType, AccVar, AccType, NewValue, AccExp, Model, Result ).
@@ -1287,6 +1162,179 @@ lookup_variable( [var(Ident, VarType, Value) | Rest], Var, Type, Result ) :-
     Type = VarType
   ; lookup_variable(Rest, Var, Type, Result)
   ).
+
+
+
+% ------
+% Rewriting rules for translating OCL# into OCL-
+% ------
+
+translate_ocls_to_oclc( OCLs, OCLc ) :-
+  % Indirect translation - rewrite OCL# code to simpler OCL# code
+  recursive_expand_ocls(OCLs, Aux),
+  % Direct translation - rewrite all OCL# constructs to OCL- constructs
+  rewrite_ocls(Aux, OCLc).
+
+% Expand OCL# code until there are no more changes
+recursive_expand_ocls(X, Z) :-
+  expand_ocls(X, Y),
+  ( X = Y ->
+    Z = Y ;
+    recursive_expand_ocls(Y, Z)
+  ).
+
+% Step 1
+% Some constructs are expanded into simpler OCL# constructs before the translation
+
+% Base cases 
+% No expansion needed and no child nodes - simply duplicate the input
+expand_ocls( self(X), self(X) ).
+expand_ocls( int_const(X), int_const(X) ).
+expand_ocls( bool_const(X), bool_const(X) ). 
+expand_ocls( null(X), null(X) ).
+expand_ocls( ident(X), ident(X) ).
+expand_ocls( all_instances(X), all_instances(X) ).
+
+% Trivial cases
+% No expansion but there are child nodes
+% Expand the child nodes and rebuild the current nodes
+expand_ocls( field(X, FieldName), field(ExpandX, FieldName) ) :-
+  expand_ocls(X, ExpandX).
+expand_ocls( negative(X), negative(ExpandX) ) :- 
+  expand_ocls(X, ExpandX).
+expand_ocls( as_sequence(X), as_sequence(ExpandX) ) :- 
+  expand_ocls(X, ExpandX).  
+expand_ocls( as_set(X), as_set(ExpandX) ) :- 
+  expand_ocls(X, ExpandX).
+expand_ocls( as_bag(X), as_bag(ExpandX) ) :- 
+  expand_ocls(X, ExpandX).
+expand_ocls( as_ordered_set(X), as_ordered_set(ExpandX) ) :- 
+  expand_ocls(X, ExpandX).
+expand_ocls( not(X), not(ExpandX) ) :- 
+  expand_ocls(X, ExpandX).
+expand_ocls( and(X,Y), and(ExpandX, ExpandY) ) :- 
+  expand_ocls(X, ExpandX),
+  expand_ocls(Y, ExpandY).
+expand_ocls( or(X,Y), or(ExpandX, ExpandY) ) :- 
+  expand_ocls(X, ExpandX),
+  expand_ocls(Y, ExpandY).
+expand_ocls( plus(X,Y), plus(ExpandX, ExpandY) ) :- 
+  expand_ocls(X, ExpandX),
+  expand_ocls(Y, ExpandY).
+expand_ocls( minus(X,Y), minus(ExpandX, ExpandY) ) :- 
+  expand_ocls(X, ExpandX),
+  expand_ocls(Y, ExpandY).
+expand_ocls( mult(X,Y), mult(ExpandX, ExpandY) ) :- 
+  expand_ocls(X, ExpandX),
+  expand_ocls(Y, ExpandY).
+expand_ocls( divide(X,Y), divide(ExpandX, ExpandY) ) :- 
+  expand_ocls(X, ExpandX),
+  expand_ocls(Y, ExpandY).
+expand_ocls( equals(X,Y), equals(ExpandX, ExpandY) ) :- 
+  expand_ocls(X, ExpandX),
+  expand_ocls(Y, ExpandY).
+expand_ocls( if_then_else(X,Y,Z), if_then_else(ExpandX, ExpandY, ExpandZ) ) :-
+  expand_ocls(X, ExpandX),
+  expand_ocls(Y, ExpandY),
+  expand_ocls(Z, ExpandZ).
+expand_ocls( including(X,Y), including(ExpandX, ExpandY) ) :-
+  expand_ocls(X, ExpandX),
+  expand_ocls(Y, ExpandY).
+expand_ocls( iterate(X, Var1, Var2, Y, Z), iterate(ExpandX, Var1, Var2, ExpandY, ExpandZ) ) :-
+  expand_ocls(X, ExpandX),
+  expand_ocls(Y, ExpandY),
+  expand_ocls(Z, ExpandZ).
+
+%% Pending expansion for concepts not in the original OCL#
+
+expand_ocls( size(X), iterate(ExpandX, "x", "a", int_const(0), plus(ident(a), int_const(1))) ) :-
+  expand_ocls(X, ExpandX).
+expand_ocls( isEmpty(X), iterate(ExpandX, "x", "a", bool_const(1), bool_const(0)) ) :-
+  expand_ocls(X, ExpandX).
+expand_ocls( includes(X, Y), iterate(ExpandX, "x", "a", bool_const(0), or(ident("a"), equals(ident("x"), ExpandY))) ) :-
+  expand_ocls(X, ExpandX),
+  expand_ocls(Y, ExpandY).
+expand_ocls( includesAll(X, Y), iterate(ExpandY, "x", "a", bool_const(1), and(ident("a"), includes(ExpandX, ident("x"))))  ) :-
+  expand_ocls(X, ExpandX),
+  expand_ocls(Y, ExpandY).
+expand_ocls( count(X, Y), iterate(ExpandX, "x", "a", int_const(0), if_then_else(equals(ident("x"), ExpandY), plus(ident("a"), inst_const(1)), ident("a"))) ) :-
+  expand_ocls(X, ExpandX),
+  expand_ocls(Y, ExpandY).
+% excluding() 
+%% Pending typing
+% Set{}, Bag{}, Sequence{}, OrderedSet{}
+
+% Step 2 - Rewriting OCL# constructs as OCL- constructs
+
+% Base cases 
+% No change needed
+rewrite_ocls( int_const(X), int_const(X) ).
+rewrite_ocls( bool_const(X), bool_const(X) ). 
+rewrite_ocls( null(X), null(X) ).
+rewrite_ocls( ident(X), ident(X) ).
+
+% Trivial cases
+% Base rewrites
+
+rewrite_ocls( self(_), ident("self") ).
+rewrite_ocls( all_instances(X), all(RewriteX) ) :- 
+  rewrite_ocls(X, RewriteX).
+rewrite_ocls( field(X, FieldName), property(RewriteX, FieldName) ) :-
+  rewrite_ocls(X, RewriteX).
+rewrite_ocls( as_sequence(X), as_type(RewriteX, "Seq") ) :-
+  rewrite_ocls(X, RewriteX).
+rewrite_ocls( as_set(X), as_type(RewriteX, "Set") ) :-
+  rewrite_ocls(X, RewriteX).
+rewrite_ocls( as_bag(X), as_type(RewriteX, "Bag") ) :-
+  rewrite_ocls(X, RewriteX).
+rewrite_ocls( as_ordered_set(X), as_type(RewriteX, "OSet") ) :-
+  rewrite_ocls(X, RewriteX).  
+rewrite_ocls( negative(X), minus(int_const(0), RewriteX) ) :- 
+  rewrite_ocls(X, RewriteX).
+rewrite_ocls( not(X), exclusive_or(RewriteX, bool_const(1)) ) :- 
+  rewrite_ocls(X, RewriteX).
+rewrite_ocls( and(X,Y), and(RewriteX, RewriteY) ) :- 
+  rewrite_ocls(X, RewriteX),
+  rewrite_ocls(Y, RewriteY).
+rewrite_ocls( or(X,Y), or(RewriteX, RewriteY) ) :- 
+  rewrite_ocls(X, RewriteX),
+  rewrite_ocls(Y, RewriteY).
+rewrite_ocls( plus(X,Y), plus(RewriteX, RewriteY) ) :- 
+  rewrite_ocls(X, RewriteX),
+  rewrite_ocls(Y, RewriteY).
+rewrite_ocls( minus(X,Y), minus(RewriteX, RewriteY) ) :- 
+  rewrite_ocls(X, RewriteX),
+  rewrite_ocls(Y, RewriteY).
+rewrite_ocls( mult(X,Y), mult(RewriteX, RewriteY) ) :- 
+  rewrite_ocls(X, RewriteX),
+  rewrite_ocls(Y, RewriteY).
+rewrite_ocls( divide(X,Y), divide(RewriteX, RewriteY) ) :- 
+  rewrite_ocls(X, RewriteX),
+  rewrite_ocls(Y, RewriteY).
+rewrite_ocls( equals(X,Y), equals(RewriteX, RewriteY) ) :- 
+  rewrite_ocls(X, RewriteX),
+  rewrite_ocls(Y, RewriteY).
+rewrite_ocls( if_then_else(X,Y,Z), if_then_else(RewriteX, RewriteY, RewriteZ) ) :-
+  rewrite_ocls(X, RewriteX),
+  rewrite_ocls(Y, RewriteY),
+  rewrite_ocls(Z, RewriteZ).
+
+%% Pending action according to type
+rewrite_ocls( including(X,Y), including(RewriteX, RewriteY) ) :-
+  rewrite_ocls(X, RewriteX),
+  rewrite_ocls(Y, RewriteY).
+
+%% Pending action according to type
+rewrite_ocls( iterate(X, Var1, Var2, Y, Z), iterate(RewriteX, Var1, Var2, RewriteY, RewriteZ) ) :-
+  rewrite_ocls(X, RewriteX),
+  rewrite_ocls(Y, RewriteY),
+  rewrite_ocls(Z, RewriteZ).
+
+
+
+
+
+
 
 
 

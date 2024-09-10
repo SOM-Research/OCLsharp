@@ -621,6 +621,44 @@ test_list_eval( [
 
   ]).
 
+test_list_compare([
+  compare_test(
+    "Set(int){}->including(7)",
+    ctype(integer, 0, [*], 1, 0),
+    [7]
+  ),
+  compare_test(
+    "Bag(int){}->including(Bag(int){7})",
+    ctype(integer, 1, [*], 0, 0),
+    [7]
+  ),
+  compare_test(
+    "Set(int){}->including(Set(int){7})",
+    ctype(integer, 0, [*], 1, 0),
+    [7]
+  ),
+  compare_test(
+    "Sequence(int){8,7,8}->asSet() = Set(int){8,7}",
+    ctype(boolean, 1, 1, _, _),
+    [1]
+  ),
+  compare_test(
+    "OrderedSet(int){8,7,8}->asBag() = Bag(int){8,7}",
+    ctype(boolean, 1, 1, _, _),
+    [1]
+  ),
+  compare_test(
+    "Set(int){7,8,9}->asSequence() = Sequence(int){9,8,7}",
+    ctype(boolean, 1, 1, _, _),
+    [0]
+  ),
+  compare_test(
+    "Set(int){7,8}->asSequence() = Sequence(int){7,8}",
+    ctype(boolean, 1, 1, _, _),
+    [1]
+  )
+]).
+
 % append - not necessary, it is equivalent to including
 % collect
 
@@ -709,6 +747,36 @@ do_test_eval( [Test | Rest], Passed, Failed) :-
     format('  - Obtained: ~w~n', [Output])     
   ).
   
+unit_test_compare(Total, Passed, Failed) :-
+  format('Starting Comparison with OCL~n--------------------~n', []),
+  test_list_compare( TestList ),
+  do_test_compare( TestList, Passed, Failed),
+  Total is Passed + Failed,
+  format('--------------------~n', []),
+  format('Comparison with OCL tests~n Total : ~w~n Passed: ~w~n Failed: ~w~n~n', [Total, Passed, Failed]).
+
+do_test_compare( [], 0, 0).
+do_test_compare( [Test | Rest], Passed, Failed) :-
+  Test = compare_test(Input, ExpectedType, ExpectedOutput),
+  do_test_compare( Rest, RestPassed, RestFailed ),
+  ( eval_ocls_expr(Input, Output), 
+    type_check_ocls_expr(Input, Type),
+    Type = ExpectedType,
+    Output = ExpectedOutput ->
+    Passed is RestPassed + 1,
+    Failed is RestFailed,
+    format('- ~w: Passed~n', [Input])
+  ;
+    eval_ocls_expr(Input, Output), 
+    type_check_ocls_expr(Input, Type),
+    Passed is RestPassed,
+    Failed is RestFailed + 1,
+    format('- ~w: Failed~n', [Input]),
+    format('  - Expected Output: ~w~n', [ExpectedOutput]),
+    format('  - Obtained Ouput: ~w~n', [Output]),
+    format('  - Expected Type ~w~n', [ExpectedType]),
+    format('  - Obtained Type: ~w~n', [Type])
+  ).
   
 
     
