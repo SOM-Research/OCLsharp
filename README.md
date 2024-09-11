@@ -99,7 +99,7 @@ The **evaluator** can be used to compute the result of an OCL# or OCL- expressio
 
 You can find a more comprehensive list of examples of OCL# expressions in the test-suite file (`unit_test.pl`).
 
-The **translator** rewrites the syntax tree of a OCL# complex expression as the syntax tree of an OCL- expression, that rely on a smaller and simpler core operators. OCL- is intended to provide the formal semantics for OCL. For example, OCL- does not include a single operand "minus" operation, so `-1` is rewritten as `0-1`.
+The **translator** rewrites the syntax tree of a OCL# complex expression as the syntax tree of an OCL- expression, that rely on a smaller and simpler core of operators. OCL- is intended to provide the formal semantics for OCL. For example, OCL- does not include a single operand "minus" operation, so `-1` is rewritten as `0-1`.
 
     ?- translate_ocls_to_oclc( negative(int_const(1)), X ).
     X = minus(int_const(0), int_const(1)).
